@@ -1,4 +1,5 @@
 let name = ''
+let character = ''
 let panel ='start'
 let $ = (element) => document.querySelector(element);
 
@@ -9,6 +10,15 @@ let nav = () => {
             case 'startGame':
                 go('game', 'df')
                 break
+        }
+
+        if(e.target.classList.contains('character')) {
+
+            document.querySelectorAll('.character').forEach(el => {
+                el.classList.remove('selected')
+            })
+
+            e.target.classList.add('selected')
         }
     }
 }

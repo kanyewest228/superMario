@@ -20,19 +20,34 @@
                 <h3>Select a character</h3>
                 <form>
                     <div class="characters">
-                        <input type="image" src="assets/img/mario-stay.png" value="mario" alt="mario" class="character">
-                        <input type="image" src="assets/img/luigi-stay.png" value="luigi" alt="luigi" class="character">
+                        <input type="image" src="assets/img/mario-stay.png" value="mario" alt="mario" class="character" draggable="false">
+                        <input type="image" src="assets/img/luigi-stay.png" value="luigi" alt="luigi" class="character" draggable="false">
                     </div>
-                    <input type="text" id="nameInput" placeholder="Username" class="usernameInput">
+                    <input type="text" id="nameInput" placeholder="Username" class="usernameInput" style="font-family: 'Mario', sans-serif;" autocomplete="off">
                     <input type="submit" class="btn" id="startGame" value="START">
                 </form>
             </div>
         </div>
     </div>
     <div id="game" class="d-none">
+        <div class="info df jcc">
+            <div class="df fdc jcc">
+                <span>Name: <span id="name">Name</span></span>
+            </div>
+            <div class="df fdc jcc">
+                <span>HP: <span id="hp">20</span></span>
+                <span>Points: <span id="points">0</span></span>
+            </div>
+            <div class="df fdc jcc">
+                <span>Stopwatch: <span id="timer">00:00</span></span>
+            </div>
+        </div>
+        <div class="elements">
+
+        </div>
     </div>
+    <div id="end"></div>
 </main>
 <div class="floor"></div>
 </body>
 </html>
-<!---->
