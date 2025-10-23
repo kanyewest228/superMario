@@ -10,6 +10,7 @@ body {
     font-family: 'Mario', sans-serif;
     font-weight: 400;
     background: cornflowerblue;
+    position: relative;
 }
 
 main {
@@ -63,7 +64,12 @@ main {
 .floor {
     background: url("/assets/img/block.png") repeat;
     width: 100%;
+    position: absolute;
     z-index: 100;
+    height: 10vh;
+    bottom: 0;
+    background-size: contain;
+    image-rendering: pixelated;
 }
 
 .pause {
@@ -134,4 +140,41 @@ main {
     background: orange;
     font-family: 'Mario', sans-serif;
     width: 100%;
+}
+
+.mario {
+    background: url("/assets/img/mario-stay.png") center no-repeat;
+    background-size: cover;
+    image-rendering: pixelated;
+}
+.run1 {
+    background: url("/assets/img/mario-walks1.png") center no-repeat !important;
+    background-size: cover !important;
+    image-rendering: pixelated;
+}
+
+.run2 {
+    background: url("/assets/img/mario-walks2.png") center no-repeat !important;
+    background-size: cover !important;
+    image-rendering: pixelated;
+}
+
+.run1l {
+    background: url("/assets/img/luigi-walks1.png") center no-repeat !important;
+    background-size: cover !important;
+    image-rendering: pixelated;
+}
+
+.reverse {
+    transform: rotateY(180deg);
+}
+
+.luigi {
+    background: url("/assets/img/luigi-stay.png") center no-repeat;
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
+.element {
+    position: absolute;
 }

@@ -13,7 +13,7 @@ let nav = () => {
         }
 
         if(e.target.classList.contains('character')) {
-
+            character = e.target.value
             document.querySelectorAll('.character').forEach(el => {
                 el.classList.remove('selected')
             })

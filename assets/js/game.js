@@ -9,6 +9,7 @@ class Drawable {
             x: 0,
             y: 0
         }
+        this.character = character || 'mario'
     }
 
     createElement() {
@@ -36,14 +37,21 @@ class Drawable {
     }
 }
 
+
+// class Floor extends Drawable {
+//     constructor(game) {
+//         super(game);
+//     }
+// }
+
 class Player extends Drawable {
     constructor(game) {
         super(game);
         this.w = 80
         this.h = 114
-        this.x = innerWidth / 2 - this.w / 2
-        this.y = innerHeight - this.h
-        this.speedPerFrame = 1
+        this.x = innerWidth / 4 - this.w / 2
+        this.y = innerHeight - this.h - $('.floor').getBoundingClientRect().height
+        this.speedPerFrame = 10
         this.keys = {
             ArrowLeft: false,
             ArrowRight: false,
@@ -51,7 +59,13 @@ class Player extends Drawable {
         }
         this.createElement()
         this.bindKeyEvents()
+        this.setCharacter()
     }
+
+    setCharacter() {
+        $('.player').classList.add(`${this.character}`)
+    }
+
 
     bindKeyEvents() {
         document.addEventListener('keydown', e => this.changeKeyStatus(e.code, true))
@@ -62,10 +76,21 @@ class Player extends Drawable {
         if(code in this.keys) this.keys[code] = value
     }
 
+
     update() {
-        if (this.keys.ArrowLeft && this.x >= 0) this.offsets.x = -this.speedPerFrame
-        else if (this.keys.ArrowRight && this.x < innerWidth - this.w) this.offsets.x = this.speedPerFrame
-        else this.offsets.x = 0
+        let animation = $('.player')
+        if (this.keys.ArrowLeft && this.x >= 0) {
+            this.offsets.x = -this.speedPerFrame
+            animation.classList.add(`run1`, 'reverse')
+        }
+        else if (this.keys.ArrowRight) {
+            this.offsets.x = this.speedPerFrame
+            animation.classList.add(`run1`)
+        }
+        else {
+            this.offsets.x = 0
+            animation.className = 'element player ' + this.character
+        }
 
         super.update()
     }
@@ -74,10 +99,9 @@ class Player extends Drawable {
 class Game {
     constructor() {
         this.name = name
-        this.character = character || 'mario'
         this.elements = []
         this.hp = 20
-        this.points = 20
+        this.points = 0
         this.player = this.generate(Player)
         this.time = {
             m1: 0,
