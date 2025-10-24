@@ -9,7 +9,7 @@
 body {
     font-family: 'Mario', sans-serif;
     font-weight: 400;
-    background: cornflowerblue;
+    background: #c4a6ff;
     position: relative;
 }
 
@@ -177,4 +177,16 @@ main {
 
 .element {
     position: absolute;
+}
+
+.mushroom {
+    background: url("/assets/img/gumb-enemy.png") center no-repeat;
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
+.turtle {
+    background: url("/assets/img/defeated-turtle-enemy.png") center no-repeat;
+    background-size: cover;
+    image-rendering: pixelated;
 }

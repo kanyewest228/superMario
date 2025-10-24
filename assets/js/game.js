@@ -35,14 +35,69 @@ class Drawable {
     removeElement() {
         this.element.remove()
     }
+
+    isColission (element) {
+        let a = {
+            x1: this.x,
+            y1: this.y,
+            x2: this.x + this.w,
+            y2: this.y + this.h
+        }
+        let b = {
+            x1: element.x,
+            y1: element.y,
+            x2: element.x + element.w,
+            y2: element.y + element.h
+        }
+
+        return a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2
+    }
 }
 
 
-// class Floor extends Drawable {
-//     constructor(game) {
-//         super(game);
-//     }
-// }
+class Enemy extends Drawable {
+    constructor(game) {
+        super(game);
+        this.w = 60
+        this.h = 60
+        this.y = innerHeight - this.h - $('.floor').getBoundingClientRect().height
+        this.x = 1270
+        this.createElement()
+    }
+
+    update() {
+        if(this.isColission(this.game.player)) {
+            setTimeout(() => {
+                this.game.hp -= 5
+                console.log("-hp")
+            },1000)
+
+        }
+        super.update()
+    }
+
+}
+
+
+class Mushroom extends Enemy {
+    constructor(game) {
+        super(game);
+    }
+
+    update() {
+        if (this.x === 1270) this.offsets.x = 5
+        else if (this.x === 1770) this.offsets.x = -5
+        super.update()
+    }
+}
+
+class Turtle extends Enemy {
+    constructor(game) {
+        super(game);
+    }
+}
+
+
 
 class Player extends Drawable {
     constructor(game) {
@@ -57,6 +112,10 @@ class Player extends Drawable {
             ArrowRight: false,
             Space: false
         }
+        this.runInterval = null
+        this.running = false
+        this.currentFrame = 0
+        this.frames = ['run1', 'run2']
         this.createElement()
         this.bindKeyEvents()
         this.setCharacter()
@@ -73,7 +132,29 @@ class Player extends Drawable {
     }
 
     changeKeyStatus(code, value) {
-        if(code in this.keys) this.keys[code] = value
+        if((code in this.keys)) this.keys[code] = value
+    }
+
+    updateAnimation(side) {
+        if (this.running) return
+        this.running = true
+        this.runInterval = setInterval(() => {
+            const prevFrame = this.frames[(this.currentFrame + 1) % this.frames.length]
+            this.element.classList.remove(prevFrame)
+
+            const currentFrame = this.frames[this.currentFrame]
+            this.element.classList.add(currentFrame)
+            this.element.classList.add(side)
+
+            this.currentFrame = (this.currentFrame + 1) % this.frames.length;
+        },100)
+    }
+
+    stopAnimation() {
+        this.running = false
+        clearInterval(this.runInterval)
+        this.runInterval = null
+        this.element.classList.remove('reverse', 'run1', 'run2')
     }
 
 
@@ -81,15 +162,16 @@ class Player extends Drawable {
         let animation = $('.player')
         if (this.keys.ArrowLeft && this.x >= 0) {
             this.offsets.x = -this.speedPerFrame
-            animation.classList.add(`run1`, 'reverse')
+            this.updateAnimation("reverse")
         }
         else if (this.keys.ArrowRight) {
             this.offsets.x = this.speedPerFrame
-            animation.classList.add(`run1`)
+            this.updateAnimation()
         }
         else {
             this.offsets.x = 0
             animation.className = 'element player ' + this.character
+            this.stopAnimation()
         }
 
         super.update()
@@ -102,7 +184,11 @@ class Game {
         this.elements = []
         this.hp = 20
         this.points = 0
+        this.counterForTimer = 0
+        this.enemies = [Mushroom, Turtle]
         this.player = this.generate(Player)
+        this.enemy = this.generate(Mushroom)
+        this.enemy = this.generate(Turtle)
         this.time = {
             m1: 0,
             m2: 0,
@@ -152,6 +238,24 @@ class Game {
         })
     }
 
+    timer() {
+        let time = this.time
+        time.s2++
+        if(time.s2 >= 10) {
+            time.s1++
+            time.s2 = 0
+        }
+        if(time.s1 >= 6) {
+            time.m2++
+            time.s1 = 0
+        }
+        if(time.m2 >= 10) {
+            time.m2 = 0
+            time.m1++
+        }
+        $('#timer').innerHTML = `${time.m1}${time.m2}:${time.s1}${time.s2}`
+    }
+
     keyEvents() {
         addEventListener('keydown', ev => {
             if(ev.code === 'Escape') this.pause = !this.pause
@@ -165,6 +269,11 @@ class Game {
         })
     }
 
+    end() {
+        this.ended = true
+        this.hp = 20
+        this.points = 0
 
+    }
 
 }
