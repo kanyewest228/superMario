@@ -36,7 +36,7 @@ class Drawable {
         this.element.remove()
     }
 
-    isColission (element) {
+    isCollision (element) {
         let a = {
             x1: this.x,
             y1: this.y,
@@ -57,21 +57,34 @@ class Drawable {
 
 class Enemy extends Drawable {
     constructor(game) {
-        super(game);
+        super(game)
         this.w = 60
         this.h = 60
         this.y = innerHeight - this.h - $('.floor').getBoundingClientRect().height
         this.x = 1270
+        this.lastDamageFrame = 0
+        this.damageCooldown = 30
         this.createElement()
     }
 
     update() {
-        if(this.isColission(this.game.player)) {
-            setTimeout(() => {
-                this.game.hp -= 5
-                console.log("-hp")
-            },1000)
-
+        if (this.offsets.x !== 0 && this.x > 0 && this.x < innerWidth) {
+            if(this.isCollision(this.game.player)) {
+                if (this.game.player.isJumping && this.game.player.jumpVelocity > 0 && 
+                    this.game.player.y + this.game.player.h <= this.y + 20) {
+                    this.game.points += 1
+                    this.removeElement()
+                    const index = this.game.elements.indexOf(this)
+                    if (index > -1) {
+                        this.game.elements.splice(index, 1)
+                    }
+                    return
+                }
+                if (this.game.counterForTimer - this.lastDamageFrame >= this.damageCooldown) {
+                    this.game.hp -= 2
+                    this.lastDamageFrame = this.game.counterForTimer
+                }
+            }
         }
         super.update()
     }
@@ -79,9 +92,9 @@ class Enemy extends Drawable {
 }
 
 
-class Mushroom extends Enemy {
+class Gump extends Enemy {
     constructor(game) {
-        super(game);
+        super(game)
     }
 
     update() {
@@ -93,15 +106,25 @@ class Mushroom extends Enemy {
 
 class Turtle extends Enemy {
     constructor(game) {
-        super(game);
+        super(game)
+    }
+}
+
+class Platform extends Drawable {
+    constructor(game) {
+        super(game)
+        this.w = 200
+        this.h = 20
+        this.x = 0
+        this.y = 0
+        this.createElement()
     }
 }
 
 
-
 class Player extends Drawable {
     constructor(game) {
-        super(game);
+        super(game)
         this.w = 80
         this.h = 114
         this.x = innerWidth / 4 - this.w / 2
@@ -114,8 +137,10 @@ class Player extends Drawable {
         }
         this.runInterval = null
         this.running = false
-        this.currentFrame = 0
-        this.frames = ['run1', 'run2']
+        this.currentRunFrame = 1
+        this.jumpVelocity = 2
+        this.jumpPower = 19
+        this.gravity = 0.5
         this.createElement()
         this.bindKeyEvents()
         this.setCharacter()
@@ -123,6 +148,46 @@ class Player extends Drawable {
 
     setCharacter() {
         $('.player').classList.add(`${this.character}`)
+    }
+
+    startRunAnimation() {
+        if (this.runInterval) return
+        
+        const animation = $('.player')
+        animation.classList.remove('run1', 'run2', 'run1l', 'run2l')
+        
+        if (this.character === 'mario') {
+            animation.classList.add(`run${this.currentRunFrame}`)
+        } else if (this.character === 'luigi') {
+            animation.classList.add(`run${this.currentRunFrame}l`)
+        }
+        
+        this.runInterval = setInterval(() => {
+            this.currentRunFrame = this.currentRunFrame === 1 ? 2 : 1
+            const animation = $('.player')
+            animation.classList.remove('run1', 'run2', 'run1l', 'run2l')
+
+            if (this.character === 'mario') {
+                animation.classList.add(`run${this.currentRunFrame}`)
+            } else if (this.character === 'luigi') {
+                animation.classList.add(`run${this.currentRunFrame}l`)
+            }
+        }, 100)
+    }
+
+    stopRunAnimation() {
+        if (this.runInterval) {
+            clearInterval(this.runInterval)
+            this.runInterval = null
+        }
+    }
+
+    jump() {
+        if (!this.isJumping) {
+            this.isJumping = true
+            this.jumpVelocity = -this.jumpPower
+            this.stopRunAnimation()
+        }
     }
 
 
@@ -135,44 +200,45 @@ class Player extends Drawable {
         if((code in this.keys)) this.keys[code] = value
     }
 
-    updateAnimation(side) {
-        if (this.running) return
-        this.running = true
-        this.runInterval = setInterval(() => {
-            const prevFrame = this.frames[(this.currentFrame + 1) % this.frames.length]
-            this.element.classList.remove(prevFrame)
-
-            const currentFrame = this.frames[this.currentFrame]
-            this.element.classList.add(currentFrame)
-            this.element.classList.add(side)
-
-            this.currentFrame = (this.currentFrame + 1) % this.frames.length;
-        },100)
-    }
-
-    stopAnimation() {
-        this.running = false
-        clearInterval(this.runInterval)
-        this.runInterval = null
-        this.element.classList.remove('reverse', 'run1', 'run2')
-    }
-
 
     update() {
         let animation = $('.player')
+        if (this.keys.Space && !this.isJumping) {
+            this.jump()
+        }
+
+        if (this.isJumping) {
+            this.offsets.y = this.jumpVelocity
+            this.jumpVelocity += this.gravity
+
+            const floorY = innerHeight - $('.floor').getBoundingClientRect().height
+            if (this.y + this.h >= floorY) {
+                this.y = floorY - this.h - 1
+                this.isJumping = false
+                this.jumpVelocity = 0
+                this.offsets.y = 0
+            }
+        } else {
+            this.offsets.y = 0
+        }
+
+
         if (this.keys.ArrowLeft && this.x >= 0) {
             this.offsets.x = -this.speedPerFrame
-            this.updateAnimation("reverse")
+            this.startRunAnimation()
+            animation.classList.add('reverse')
         }
         else if (this.keys.ArrowRight) {
             this.offsets.x = this.speedPerFrame
-            this.updateAnimation()
+            this.startRunAnimation()
+            animation.classList.remove('reverse')
         }
         else {
             this.offsets.x = 0
-            animation.className = 'element player ' + this.character
-            this.stopAnimation()
+            this.stopRunAnimation()
+            animation.classList.remove('run1', 'run2', 'run1l', 'run2l', 'reverse')
         }
+
 
         super.update()
     }
@@ -185,10 +251,12 @@ class Game {
         this.hp = 20
         this.points = 0
         this.counterForTimer = 0
-        this.enemies = [Mushroom, Turtle]
+        this.enemies = [Gump, Turtle]
         this.player = this.generate(Player)
-        this.enemy = this.generate(Mushroom)
-        this.enemy = this.generate(Turtle)
+        this.enemies.forEach((enemy) => {
+            return this.generate(enemy)
+        })
+        this.platform = this.generate(Platform)
         this.time = {
             m1: 0,
             m2: 0,

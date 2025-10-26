@@ -9,7 +9,7 @@
 body {
     font-family: 'Mario', sans-serif;
     font-weight: 400;
-    background: #c4a6ff;
+    background: #529afd;
     position: relative;
 }
 
@@ -34,11 +34,13 @@ main {
     width: 100%;
     height: 8vh;
     z-index: 100;
-    background: rgba(255, 255, 255, .9);
-    flex-direction: column;
-    justify-content: center;
+    background: transparent;
+    justify-content: space-around;
 }
 
+.info span {
+    font-size: 25px;
+}
 
 .df {
     display: flex;
@@ -165,6 +167,12 @@ main {
     image-rendering: pixelated;
 }
 
+.run2l {
+    background: url("/assets/img/luigi-walks2.png") center no-repeat !important;
+    background-size: cover !important;
+    image-rendering: pixelated;
+}
+
 .reverse {
     transform: rotateY(180deg);
 }
@@ -179,14 +187,20 @@ main {
     position: absolute;
 }
 
-.mushroom {
+.gump {
     background: url("/assets/img/gumb-enemy.png") center no-repeat;
     background-size: cover;
     image-rendering: pixelated;
 }
 
 .turtle {
-    background: url("/assets/img/defeated-turtle-enemy.png") center no-repeat;
+    background: url("/assets/img/turtle.png") center no-repeat;
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
+.platform {
+    background: url("/assets/img/platform.png") center no-repeat;
     background-size: cover;
     image-rendering: pixelated;
 }
