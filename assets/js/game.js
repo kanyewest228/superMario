@@ -38,11 +38,6 @@ class Drawable {
 }
 
 
-// class Floor extends Drawable {
-//     constructor(game) {
-//         super(game);
-//     }
-// }
 
 class Player extends Drawable {
     constructor(game) {
@@ -55,8 +50,14 @@ class Player extends Drawable {
         this.keys = {
             ArrowLeft: false,
             ArrowRight: false,
-            Space: false
+            ArrowUp: false
         }
+        this.runInterval = null
+        this.currentRunFrame = 1
+        this.isJumping = false
+        this.jumpVelocity = 0
+        this.jumpPower = 22
+        this.gravity = 0.5
         this.createElement()
         this.bindKeyEvents()
         this.setCharacter()
@@ -64,6 +65,36 @@ class Player extends Drawable {
 
     setCharacter() {
         $('.player').classList.add(`${this.character}`)
+    }
+
+    startRunAnimation() {
+        if (this.runInterval) return
+        this.runInterval = setInterval(() => {
+            this.currentRunFrame = this.currentRunFrame === 1 ? 2 : 1
+            const animation = $('.player')
+            animation.classList.remove('run1', 'run2', 'run1l', 'run2l')
+            
+            if (this.character === 'mario') {
+                animation.classList.add(`run${this.currentRunFrame}`)
+            } else if (this.character === 'luigi') {
+                animation.classList.add(`run${this.currentRunFrame}l`)
+            }
+        }, 100)
+    }
+
+    stopRunAnimation() {
+        if (this.runInterval) {
+            clearInterval(this.runInterval)
+            this.runInterval = null
+        }
+    }
+
+    jump() {
+        if (!this.isJumping) {
+            this.isJumping = true
+            this.jumpVelocity = -this.jumpPower
+            this.stopRunAnimation()
+        }
     }
 
 
@@ -79,17 +110,42 @@ class Player extends Drawable {
 
     update() {
         let animation = $('.player')
-        if (this.keys.ArrowLeft && this.x >= 0) {
-            this.offsets.x = -this.speedPerFrame
-            animation.classList.add(`run1`, 'reverse')
+
+        if (this.keys.ArrowUp && !this.isJumping) {
+            this.jump()
         }
-        else if (this.keys.ArrowRight) {
-            this.offsets.x = this.speedPerFrame
-            animation.classList.add(`run1`)
+
+        if (this.isJumping) {
+            this.offsets.y = this.jumpVelocity
+            this.jumpVelocity += this.gravity
+
+            const floorY = innerHeight - $('.floor').getBoundingClientRect().height
+            if (this.y + this.h >= floorY) {
+                this.y = floorY - this.h - 1
+                this.isJumping = false
+                this.jumpVelocity = 0
+                this.offsets.y = 0
+            }
+        } else {
+            this.offsets.y = 0
         }
-        else {
-            this.offsets.x = 0
-            animation.className = 'element player ' + this.character
+        
+        if (!this.isJumping) {
+            if (this.keys.ArrowLeft && this.x >= 0) {
+                this.offsets.x = -this.speedPerFrame
+                this.startRunAnimation()
+                animation.classList.add('reverse')
+            }
+            else if (this.keys.ArrowRight) {
+                this.offsets.x = this.speedPerFrame
+                this.startRunAnimation()
+                animation.classList.remove('reverse')
+            }
+            else {
+                this.offsets.x = 0
+                this.stopRunAnimation()
+                animation.className = 'element player ' + this.character
+            }
         }
 
         super.update()
