@@ -122,19 +122,41 @@ class Platform extends Drawable {
     }
 
 
-    collisionTop() {
-
+    collisionTop(element) {
+        let a = {
+            x1: this.x,
+            y1: this.y,
+            x2: this.x + this.w,
+            y2: this.y + this.h
+        }
+        let b = {
+            x1: element.x,
+            y1: element.y,
+            x2: element.x + element.w,
+            y2: element.y + element.h
+        }
     }
 
-    collisionBottom() {
-
+    collisionBottom(element) {
+        let a = {
+            x1: this.x,
+            y1: this.y,
+            x2: this.x + this.w,
+            y2: this.y + this.h
+        }
+        let b = {
+            x1: element.x,
+            y1: element.y,
+            x2: element.x + element.w,
+            y2: element.y + element.h
+        }
     }
 
     collisionPlatform() {
         let platforms = document.querySelectorAll('.platform')
         platforms.forEach(platform => {
-            this.collisionTop()
-            this.collisionBottom()
+            this.collisionTop(this.game.player)
+            this.collisionBottom(this.game.player)
         })
         }
 
