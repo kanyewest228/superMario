@@ -113,10 +113,10 @@ class Turtle extends Enemy {
 class Platform extends Drawable {
     constructor(game) {
         super(game)
-        this.w = 200
-        this.h = 20
+        this.w = 70
+        this.h = 70
         this.x = 0
-        this.y = 0
+        this.y = innerHeight / 2 + 50
         this.createElement()
     }
 }
@@ -152,7 +152,6 @@ class Player extends Drawable {
 
     startRunAnimation() {
         if (this.runInterval) return
-        
         const animation = $('.player')
         animation.classList.remove('run1', 'run2', 'run1l', 'run2l')
         
@@ -225,13 +224,21 @@ class Player extends Drawable {
 
         if (this.keys.ArrowLeft && this.x >= 0) {
             this.offsets.x = -this.speedPerFrame
-            this.startRunAnimation()
-            animation.classList.add('reverse')
+            if (!this.isJumping) {
+                this.startRunAnimation()
+                animation.classList.add('reverse')
+                animation.classList.add('run1')
+            }
+
         }
         else if (this.keys.ArrowRight) {
             this.offsets.x = this.speedPerFrame
-            this.startRunAnimation()
-            animation.classList.remove('reverse')
+            if (!this.isJumping) {
+                this.startRunAnimation()
+                animation.classList.remove('reverse')
+                animation.classList.add('run1')
+            }
+
         }
         else {
             this.offsets.x = 0
@@ -250,6 +257,7 @@ class Game {
         this.elements = []
         this.hp = 20
         this.points = 0
+        this.kills = 0
         this.counterForTimer = 0
         this.enemies = [Gump, Turtle]
         this.player = this.generate(Player)

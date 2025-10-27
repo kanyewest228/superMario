@@ -19,6 +19,10 @@ main {
     overflow: hidden;
 }
 
+html {
+    overflow-x: hidden;
+}
+
 .usernameInput {
     border: none;
     padding: 10px 20px;
