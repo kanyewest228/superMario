@@ -24,9 +24,12 @@ class Drawable {
     }
 
     draw () {
+        const screenX = this.x - this.game.camera.x
+        const screenY = this.y
+        
         this.element.style = `
-            left: ${this.x}px;
-            top: ${this.y}px;
+            left: ${screenX}px;
+            top: ${screenY}px;
             width: ${this.w}px;
             height: ${this.h}px;
         `
@@ -329,7 +332,7 @@ class Player extends Drawable {
             }
         }
 
-        if (this.keys.ArrowLeft && this.x >= 0) {
+        if (this.keys.ArrowLeft) {
             this.offsets.x = -this.speedPerFrame
             if (!this.isJumping) {
                 this.startRunAnimation()
@@ -343,7 +346,6 @@ class Player extends Drawable {
                 animation.classList.remove('reverse')
                 animation.classList.add('run1')
             }
-
         }
         else {
             this.offsets.x = 0
@@ -382,11 +384,26 @@ class Game {
         }
         this.ended = false
         this.pause = false
+        this.camera = {
+            x: 0,
+            centerX: innerWidth / 2,
+            minX: 0,
+            maxX: 3000
+        }
         this.keyEvents()
     }
 
     start() {
         this.loop()
+    }
+
+    updateCamera() {
+        const playerCenterX = this.player.x + this.player.w / 2
+        
+        if (playerCenterX >= this.camera.centerX) {
+            const targetCameraX = this.player.x - this.camera.centerX + this.player.w / 2
+            this.camera.x = Math.max(this.camera.minX, Math.min(this.camera.maxX, targetCameraX))
+        }
     }
 
     generate(className) {
@@ -407,6 +424,7 @@ class Game {
                 document.querySelectorAll('.element').forEach(el => {
                     if(!el.classList.contains('platform')) el.style.animationPlayState = 'running'
                 })
+                this.updateCamera()
                 this.updateElements()
                 this.setParams()
             } else if(this.pause) {
