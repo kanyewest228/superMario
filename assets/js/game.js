@@ -135,6 +135,17 @@ class Platform extends Drawable {
             x2: element.x + element.w,
             y2: element.y + element.h
         }
+        
+        if (b.x1 < a.x2 && b.x2 > a.x1) {
+            if (b.y2 > a.y1 && b.y2 < a.y1 + 20 && element.offsets.y > 0) {
+                element.y = a.y1 - element.h
+                element.isJumping = false
+                element.jumpVelocity = 0
+                element.offsets.y = 0
+                return true
+            }
+        }
+        return false
     }
 
     collisionBottom(element) {
@@ -150,15 +161,51 @@ class Platform extends Drawable {
             x2: element.x + element.w,
             y2: element.y + element.h
         }
+        
+        if (b.x1 < a.x2 && b.x2 > a.x1) {
+            if (b.y1 < a.y2 && b.y1 > a.y2 - 20 && element.offsets.y < 0) {
+                element.y = a.y2
+                element.jumpVelocity = 0
+                element.offsets.y = 0
+                return true
+            }
+        }
+        return false
+    }
+
+    collisionSide(element) {
+        let a = {
+            x1: this.x,
+            y1: this.y,
+            x2: this.x + this.w,
+            y2: this.y + this.h
+        }
+        let b = {
+            x1: element.x,
+            y1: element.y,
+            x2: element.x + element.w,
+            y2: element.y + element.h
+        }
+        if (b.y1 < a.y2 && b.y2 > a.y1) {
+            if (b.x2 > a.x1 && b.x2 < a.x1 + 20 && element.offsets.x > 0) {
+                element.x = a.x1 - element.w
+                element.offsets.x = 0
+                return true
+            }
+            if (b.x1 < a.x2 && b.x1 > a.x2 - 20 && element.offsets.x < 0) {
+                element.x = a.x2
+                element.offsets.x = 0
+                return true
+            }
+        }
+        return false
     }
 
     collisionPlatform() {
-        let platforms = document.querySelectorAll('.platform')
-        platforms.forEach(platform => {
-            this.collisionTop(this.game.player)
-            this.collisionBottom(this.game.player)
-        })
-        }
+        this.collisionTop(this.game.player)
+        this.collisionBottom(this.game.player)
+        this.collisionSide(this.game.player)
+    }
 
     update() {
         this.collisionPlatform()
@@ -263,7 +310,23 @@ class Player extends Drawable {
                 this.offsets.y = 0
             }
         } else {
-            this.offsets.y = 0
+            let standingOnPlatform = false
+            this.game.elements.forEach(element => {
+                if (element instanceof Platform) {
+                    if (this.x + this.w > element.x && this.x < element.x + element.w &&
+                        this.y + this.h >= element.y - 5 && this.y + this.h <= element.y + 5) {
+                        standingOnPlatform = true
+                    }
+                }
+            })
+        
+            const floorY = innerHeight - $('.floor').getBoundingClientRect().height
+            if (!standingOnPlatform && this.y + this.h < floorY) {
+                this.isJumping = true
+                this.jumpVelocity = 0
+            } else {
+                this.offsets.y = 0
+            }
         }
 
         if (this.keys.ArrowLeft && this.x >= 0) {
