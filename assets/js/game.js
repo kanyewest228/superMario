@@ -72,7 +72,8 @@ class Enemy extends Drawable {
             if(this.isCollision(this.game.player)) {
                 if (this.game.player.isJumping && this.game.player.jumpVelocity > 0 && 
                     this.game.player.y + this.game.player.h <= this.y + 20) {
-                    this.game.points += 1
+                    this.game.points += 100
+                    this.game.kills += 1
                     this.removeElement()
                     const index = this.game.elements.indexOf(this)
                     if (index > -1) {
@@ -115,9 +116,31 @@ class Platform extends Drawable {
         super(game)
         this.w = 70
         this.h = 70
-        this.x = 0
+        this.x = innerWidth / 3
         this.y = innerHeight / 2 + 50
         this.createElement()
+    }
+
+
+    collisionTop() {
+
+    }
+
+    collisionBottom() {
+
+    }
+
+    collisionPlatform() {
+        let platforms = document.querySelectorAll('.platform')
+        platforms.forEach(platform => {
+            this.collisionTop()
+            this.collisionBottom()
+        })
+        }
+
+    update() {
+        this.collisionPlatform()
+        super.update()
     }
 }
 
@@ -127,7 +150,7 @@ class Player extends Drawable {
         super(game)
         this.w = 80
         this.h = 114
-        this.x = innerWidth / 4 - this.w / 2
+        this.x = 10
         this.y = innerHeight - this.h - $('.floor').getBoundingClientRect().height
         this.speedPerFrame = 10
         this.keys = {
@@ -221,7 +244,6 @@ class Player extends Drawable {
             this.offsets.y = 0
         }
 
-
         if (this.keys.ArrowLeft && this.x >= 0) {
             this.offsets.x = -this.speedPerFrame
             if (!this.isJumping) {
@@ -229,9 +251,7 @@ class Player extends Drawable {
                 animation.classList.add('reverse')
                 animation.classList.add('run1')
             }
-
-        }
-        else if (this.keys.ArrowRight) {
+        } else if (this.keys.ArrowRight) {
             this.offsets.x = this.speedPerFrame
             if (!this.isJumping) {
                 this.startRunAnimation()
@@ -245,7 +265,6 @@ class Player extends Drawable {
             this.stopRunAnimation()
             animation.classList.remove('run1', 'run2', 'run1l', 'run2l', 'reverse')
         }
-
 
         super.update()
     }
@@ -261,10 +280,15 @@ class Game {
         this.counterForTimer = 0
         this.enemies = [Gump, Turtle]
         this.player = this.generate(Player)
+        this.platformX = [800, 870, 940, 1010, 1080, 1640, 1710, 1780, 2340, 2410, 2480, 2550]
         this.enemies.forEach((enemy) => {
             return this.generate(enemy)
         })
-        this.platform = this.generate(Platform)
+        this.platformX.forEach((x) => {
+            let el = this.generate(Platform)
+            let ind = this.elements.lastIndexOf(el)
+            this.elements[ind].x = x
+        })
         this.time = {
             m1: 0,
             m2: 0,
@@ -295,7 +319,9 @@ class Game {
                 }
                 if (this.hp < 1) this.end()
                 $('.pause').style.display = 'none'
-                document.querySelectorAll('.element').forEach(el => el.style.animationPlayState = 'running')
+                document.querySelectorAll('.element').forEach(el => {
+                    if(!el.classList.contains('platform')) el.style.animationPlayState = 'running'
+                })
                 this.updateElements()
                 this.setParams()
             } else if(this.pause) {
