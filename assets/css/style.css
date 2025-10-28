@@ -208,3 +208,15 @@ html {
     background-size: cover;
     image-rendering: pixelated;
 }
+
+.luckyblock {
+    background: url("/assets/img/lucky-block.png") center no-repeat;
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
+.castle {
+    background: url("/assets/img/castle.png") center no-repeat;
+    background-size: cover;
+    image-rendering: pixelated;
+}

@@ -57,14 +57,34 @@ class Drawable {
     }
 }
 
+class Floor extends Drawable {
+    constructor(game) {
+        super(game);
+        this.w = 9000
+        this.y = innerHeight - 70
+        this.h = 70
+        this.createElement()
+    }
+}
+
+class Castle extends Drawable {
+    constructor(game) {
+        super(game);
+        this.x = 8500
+        this.y = innerHeight - 300
+        this.h = 250
+        this.w = 250
+        this.createElement()
+    }
+}
+
 
 class Enemy extends Drawable {
     constructor(game) {
         super(game)
         this.w = 60
         this.h = 60
-        this.y = innerHeight - this.h - $('.floor').getBoundingClientRect().height
-        this.x = 1270
+        this.y = innerHeight - this.h - 70
         this.lastDamageFrame = 0
         this.damageCooldown = 30
         this.createElement()
@@ -90,7 +110,6 @@ class Enemy extends Drawable {
                 }
             }
         }
-        super.update()
     }
 
 }
@@ -102,8 +121,7 @@ class Gump extends Enemy {
     }
 
     update() {
-        if (this.x === 1270) this.offsets.x = 5
-        else if (this.x === 1770) this.offsets.x = -5
+
         super.update()
     }
 }
@@ -114,7 +132,7 @@ class Turtle extends Enemy {
     }
 }
 
-class Platform extends Drawable {
+class Block extends Drawable {
     constructor(game) {
         super(game)
         this.w = 70
@@ -123,7 +141,6 @@ class Platform extends Drawable {
         this.y = innerHeight / 2 + 50
         this.createElement()
     }
-
 
     collisionTop(element) {
         let a = {
@@ -138,7 +155,7 @@ class Platform extends Drawable {
             x2: element.x + element.w,
             y2: element.y + element.h
         }
-        
+
         if (b.x1 < a.x2 && b.x2 > a.x1) {
             if (b.y2 > a.y1 && b.y2 < a.y1 + 20 && element.offsets.y > 0) {
                 element.y = a.y1 - element.h
@@ -164,7 +181,7 @@ class Platform extends Drawable {
             x2: element.x + element.w,
             y2: element.y + element.h
         }
-        
+
         if (b.x1 < a.x2 && b.x2 > a.x1) {
             if (b.y1 < a.y2 && b.y1 > a.y2 - 20 && element.offsets.y < 0) {
                 element.y = a.y2
@@ -216,6 +233,19 @@ class Platform extends Drawable {
     }
 }
 
+class Platform extends Block {
+    constructor(game) {
+        super(game);
+    }
+}
+
+class Luckyblock extends Block {
+    constructor(game) {
+        super(game)
+    }
+
+}
+
 
 class Player extends Drawable {
     constructor(game) {
@@ -224,7 +254,7 @@ class Player extends Drawable {
         this.h = 114
         this.x = 10
         this.y = innerHeight - this.h - $('.floor').getBoundingClientRect().height
-        this.speedPerFrame = 10
+        this.speedPerFrame = 12
         this.keys = {
             ArrowLeft: false,
             ArrowRight: false,
@@ -249,13 +279,7 @@ class Player extends Drawable {
         if (this.runInterval) return
         const animation = $('.player')
         animation.classList.remove('run1', 'run2', 'run1l', 'run2l')
-        
-        if (this.character === 'mario') {
-            animation.classList.add(`run${this.currentRunFrame}`)
-        } else if (this.character === 'luigi') {
-            animation.classList.add(`run${this.currentRunFrame}l`)
-        }
-        
+
         this.runInterval = setInterval(() => {
             this.currentRunFrame = this.currentRunFrame === 1 ? 2 : 1
             const animation = $('.player')
@@ -365,17 +389,36 @@ class Game {
         this.points = 0
         this.kills = 0
         this.counterForTimer = 0
+
         this.enemies = [Gump, Turtle]
+        this.platformX = [800, 870, 940, 1010, 1150,1640, 1710, 1780, 2340, 2410, 2480, 2550, 2900, 3040, 3700, 4300, 4370, 4440, 4510, 4580, 5140, 5210, 5280, 5350, 5840, 6470, 6540, 6680, 7380, 7450, 7520]
+        this.luckyblockX = [1080, 2970, 4650, 6610]
+        this.enemiesX = [1250, 2550, 4060, 5330, 6330, 8000]
+
+        this.floor = this.generate(Floor)
+        this.castle = this.generate(Castle)
         this.player = this.generate(Player)
-        this.platformX = [800, 870, 940, 1010, 1080, 1640, 1710, 1780, 2340, 2410, 2480, 2550]
-        this.enemies.forEach((enemy) => {
-            return this.generate(enemy)
+
+        // generating
+        this.enemiesX.forEach((x) => {
+            let random = Math.floor(Math.random() * this.enemies.length)
+            let el = this.generate(this.enemies[random])
+            let ind = this.elements.lastIndexOf(el)
+            el.x = x
+            this.elements[ind].x = x
         })
         this.platformX.forEach((x) => {
             let el = this.generate(Platform)
             let ind = this.elements.lastIndexOf(el)
             this.elements[ind].x = x
         })
+        this.luckyblockX.forEach((x) => {
+            let el = this.generate(Luckyblock)
+            let ind = this.elements.lastIndexOf(el)
+            this.elements[ind].x = x
+        })
+
+
         this.time = {
             m1: 0,
             m2: 0,
@@ -388,7 +431,7 @@ class Game {
             x: 0,
             centerX: innerWidth / 2,
             minX: 0,
-            maxX: 3000
+            maxX: 7000
         }
         this.keyEvents()
     }
