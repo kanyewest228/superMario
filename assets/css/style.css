@@ -165,6 +165,18 @@ html {
     image-rendering: pixelated;
 }
 
+.jump {
+    background: url("/assets/img/mario-jump.png") center no-repeat !important;
+    background-size: cover !important;
+    image-rendering: pixelated;
+}
+
+.jumpl {
+    background: url("/assets/img/luigi-jump.png") center no-repeat !important;
+    background-size: cover !important;
+    image-rendering: pixelated;
+}
+
 .run1l {
     background: url("/assets/img/luigi-walks1.png") center no-repeat !important;
     background-size: cover !important;
@@ -219,4 +231,8 @@ html {
     background: url("/assets/img/castle.png") center no-repeat;
     background-size: cover;
     image-rendering: pixelated;
+}
+
+.center {
+    transform: translate(-50%, -50%);
 }

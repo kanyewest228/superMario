@@ -59,7 +59,7 @@ class Drawable {
 
 class Floor extends Drawable {
     constructor(game) {
-        super(game);
+        super(game)
         this.w = 9000
         this.y = innerHeight - 70
         this.h = 70
@@ -69,7 +69,7 @@ class Floor extends Drawable {
 
 class Castle extends Drawable {
     constructor(game) {
-        super(game);
+        super(game)
         this.x = 8500
         this.y = innerHeight - 300
         this.h = 250
@@ -87,11 +87,24 @@ class Enemy extends Drawable {
         this.y = innerHeight - this.h - 70
         this.lastDamageFrame = 0
         this.damageCooldown = 30
+        this.moveDist = 500
+        this.moveDirection = 1
+        this.moveSpeed = 5
+        this.startX = null
         this.createElement()
     }
 
     update() {
-        if (this.offsets.x !== 0 && this.x > 0 && this.x < innerWidth) {
+        if (this.startX === null) this.startX = this.x
+
+        if (this.moveDirection === 1 && this.x >= this.startX + this.moveDist) this.moveDirection = -1
+        if (this.moveDirection === -1 && this.x <= this.startX) this.moveDirection = 1
+
+        this.offsets.x = this.moveSpeed * this.moveDirection
+        super.update()
+
+        const screenX = this.x - this.game.camera.x
+        if (screenX > -this.w && screenX < innerWidth) {
             if(this.isCollision(this.game.player)) {
                 if (this.game.player.isJumping && this.game.player.jumpVelocity > 0 && 
                     this.game.player.y + this.game.player.h <= this.y + 20) {
@@ -118,11 +131,6 @@ class Enemy extends Drawable {
 class Gump extends Enemy {
     constructor(game) {
         super(game)
-    }
-
-    update() {
-
-        super.update()
     }
 }
 
@@ -235,7 +243,7 @@ class Block extends Drawable {
 
 class Platform extends Block {
     constructor(game) {
-        super(game);
+        super(game)
     }
 }
 
@@ -250,8 +258,8 @@ class Luckyblock extends Block {
 class Player extends Drawable {
     constructor(game) {
         super(game)
-        this.w = 80
-        this.h = 114
+        this.w = 70
+        this.h = 103
         this.x = 10
         this.y = innerHeight - this.h - $('.floor').getBoundingClientRect().height
         this.speedPerFrame = 12
@@ -279,6 +287,11 @@ class Player extends Drawable {
         if (this.runInterval) return
         const animation = $('.player')
         animation.classList.remove('run1', 'run2', 'run1l', 'run2l')
+        if (this.character === 'mario') {
+            animation.classList.add(`run${this.currentRunFrame}`)
+        } else if (this.character === 'luigi') {
+            animation.classList.add(`run${this.currentRunFrame}l`)
+        }
 
         this.runInterval = setInterval(() => {
             this.currentRunFrame = this.currentRunFrame === 1 ? 2 : 1
@@ -330,8 +343,9 @@ class Player extends Drawable {
             this.jumpVelocity += this.gravity
 
             const floorY = innerHeight - $('.floor').getBoundingClientRect().height
-            if (this.y + this.h >= floorY) {
-                this.y = floorY - this.h - 1
+            const epsilon = 0.5
+            if (this.jumpVelocity >= 0 && this.y + this.h >= floorY - epsilon) {
+                this.y = floorY - this.h
                 this.isJumping = false
                 this.jumpVelocity = 0
                 this.offsets.y = 0
@@ -348,9 +362,15 @@ class Player extends Drawable {
             })
         
             const floorY = innerHeight - $('.floor').getBoundingClientRect().height
-            if (!standingOnPlatform && this.y + this.h < floorY) {
-                this.isJumping = true
-                this.jumpVelocity = 0
+            const epsilon = 0.5
+            if (!standingOnPlatform) {
+                if (this.y + this.h < floorY - epsilon) {
+                    this.isJumping = true
+                    this.jumpVelocity = Math.max(this.jumpVelocity, 0)
+                } else {
+                    this.y = floorY - this.h
+                    this.offsets.y = 0
+                }
             } else {
                 this.offsets.y = 0
             }
@@ -360,8 +380,10 @@ class Player extends Drawable {
             this.offsets.x = -this.speedPerFrame
             if (!this.isJumping) {
                 this.startRunAnimation()
-                animation.classList.add('reverse')
-                animation.classList.add('run1')
+                animation.classList.add('run1', 'reverse')
+            } else {
+                if (this.character === 'mario') animation.classList.add('run1', 'reverse')
+                else animation.classList.add('run1l', 'reverse')
             }
         } else if (this.keys.ArrowRight) {
             this.offsets.x = this.speedPerFrame
@@ -369,6 +391,9 @@ class Player extends Drawable {
                 this.startRunAnimation()
                 animation.classList.remove('reverse')
                 animation.classList.add('run1')
+            } else {
+                if (this.character === 'mario') animation.classList.add('run1')
+                else animation.classList.add('run1l')
             }
         }
         else {
